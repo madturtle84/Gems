@@ -11,12 +11,13 @@ using UnityEngine.UI;
  * View: Gem.Explode(); Gem.Fall(); Gem.FollowCursor(); SwapGems();
 */
 public class Board : MonoBehaviour {
-	public enum BoardState { idle, processing, dragging };	
-
+	/* Public Variables */
 	public GameObject gridPrefab;
 	public GameObject gemPrefab;
-
+	/* Public Properties */
+	public enum BoardState { idle, processing, dragging };	
 	public bool movingMode { get; set; }
+	/* Private Variables */
 	private BoardState currentState = BoardState.idle;
 	private Vector2 boardOrigin = new Vector2(-4, -4);
 	private int boardW = 8;
@@ -27,35 +28,30 @@ public class Board : MonoBehaviour {
 	private Camera gameCamera;
 	private Gem gemHolding;
 	private List<GemGroup> groups = new List<GemGroup>();
-	//private char[,] boardLayout = new char[,]{
-	//	{'b', 'y', 'r', 'y', 'g', 'd', 'g', 'r'},
-	//	{'y','b','b','b','b','b','d','b'},
-	//	{'y','r','d','r','r','r','g','g'},
-	//	{'y','d','r','b','b','b','g','r'},
-	//	{'d','r','r','g','d','b','d','g'},
-	//	{'d','y','g','b','d','g','y','d'}
-	//};
 
 	void Start() {
 		grids = new Grid[boardW, boardHTotal];
 		movingMode = false;
 		gameCamera = Camera.main;
 		InitializeBoard();
-		//InitializeBoardUsingLayout(boardLayout);
 	}
 
+	/** Basic Process:
+	 *  1. Wait for player's input. *ProcessMouseInput*
+	 *  2. Eliminate connecting gems based the rule of the game. *CheckMatchingGems*, *EliminateGemGroups*
+	 *  3. Create new gems to fill the holes. *FillAllEmptyGrids*
+	 *  4. Repeate step 2. if having connecting gems
+	 *  5. Player regains control, back to step 1.
+	**/
 	void Update() {
 		ProcessMouseInput();	
-
 		/* Debug Message */
-		//if (Input.GetMouseButtonDown(0)) print(Input.mousePosition + " -> " + Camera.main.ScreenToWorldPoint(Input.mousePosition));
 		if (Input.GetKeyDown(KeyCode.R)) {
-			//ResetAllGems();
 			Application.LoadLevel(0);
 		}
 	}
+	
 	/* If there is a hole in the board, find the closest gem above and fall down to its position*/
-
 	private int numFillingColumes = 0;// Number of columes that currently filling holes.
 	private IEnumerator FillAllEmptyGrids() {
 		currentState = BoardState.processing;
@@ -81,7 +77,6 @@ public class Board : MonoBehaviour {
 		for (int y = 0; y < boardHTotal; y++) {
 			Grid currentGrid = grids[x, y];
 			if (currentGrid.gem) continue; // If not a hole, ignore this grid.
-			//if (currentGrid.gem == null) {
 
 			/* Locate the closest gem above */
 			int y2 = y;
@@ -93,7 +88,6 @@ public class Board : MonoBehaviour {
 				}
 				else {// If the top grid is empty, create a gem above the board
 					CreateGemAtGrid(x, y2);
-					//CreateGemFromAbove(x);
 				}
 				gridAbove = grids[x, y2];
 			} while (gridAbove.gem == null);
